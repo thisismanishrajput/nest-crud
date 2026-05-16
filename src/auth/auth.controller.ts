@@ -1,41 +1,39 @@
 import { Body, Controller, Get, Post, Request, UseGuards } from '@nestjs/common';
 import { AuthService } from './auth.service';
-import { UserService } from '../user/user.service';
 import { RegisterUserDto } from './dto/registerUser.dto';
 import { LoginUserDto } from './dto/loginUserDto';
+import { VerifyOtpDto } from './dto/verifyOtp.dto';
 import { AuthGuard } from './auth.guard';
 
 @Controller('auth')
 export class AuthController {
-    constructor(
-        private readonly authService: AuthService,
-        private readonly userService: UserService
-    ) { }
+  constructor(private readonly authService: AuthService) {}
 
-    @Post("register")
-    async register(@Body() registerUserDto: RegisterUserDto) {
-        const token = await this.authService.regisgterUser(registerUserDto)
-        return { "access_token": token };
-    }
+  @Post('register')
+  async register(@Body() registerUserDto: RegisterUserDto) {
+    return await this.authService.registerUser(registerUserDto);
+  }
 
-    @Post("login")
-    async login(@Body() loginUserDto: LoginUserDto) {
-        const result = await this.authService.loginUser(loginUserDto);
-        return result;
-    }
+  @Post('verify-otp')
+  async verifyOtp(@Body() verifyOtpDto: VerifyOtpDto) {
+    return await this.authService.verifyOtp(verifyOtpDto);
+  }
 
+  @Post('login')
+  async login(@Body() loginUserDto: LoginUserDto) {
+    return await this.authService.loginUser(loginUserDto);
+  }
 
-    @UseGuards(AuthGuard)
-    @Get("profile")
-    async getProfile(@Request() req) {
-        const userId = req.user.sub;
-        const user = await this.authService.getUserById(userId);
-        return {
-            email: user?.email,
-            fName: user?.fName,
-            lName: user?.lName,
-            role: user?.role,
-
-        }
-    }
+  @UseGuards(AuthGuard)
+  @Get('profile')
+  async getProfile(@Request() req) {
+    const userId = req.user.sub;
+    const user = await this.authService.getUserById(userId);
+    return {
+      email: user?.email,
+      fName: user?.fName,
+      lName: user?.lName,
+      role: user?.role,
+    };
+  }
 }

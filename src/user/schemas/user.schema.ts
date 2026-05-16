@@ -19,6 +19,15 @@ export class User {
     @Prop({required: true})
     password!: string;
 
+    @Prop({default: false})
+    isVerified!: boolean;
+
+    @Prop()
+    otp?: string;
+
+    @Prop()
+    otpExpiresAt?: Date;
+
     @Prop({default: UserRole.STUDENT})
     role!: string;
 }
