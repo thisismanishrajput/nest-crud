@@ -6,14 +6,12 @@ import { UserModule } from './user/user.module';
 import { MongooseModule } from '@nestjs/mongoose';
 import { ConfigModule } from '@nestjs/config';
 
-
-
 @Module({
   imports: [
     ConfigModule.forRoot(),
-    AuthModule, 
+    AuthModule,
     UserModule,
-    MongooseModule.forRoot(process.env.MONGO_URI as string)
+    MongooseModule.forRoot(process.env.MONGO_URI as string),
   ],
   controllers: [AppController],
   providers: [AppService],

@@ -1,11 +1,16 @@
-import { Injectable, InternalServerErrorException, Logger } from '@nestjs/common';
+import {
+  Injectable,
+  InternalServerErrorException,
+  Logger,
+} from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import nodemailer from 'nodemailer';
+import type { Transporter } from 'nodemailer';
 
 @Injectable()
 export class MailService {
   private readonly logger = new Logger(MailService.name);
-  private transporter;
+  private transporter: Transporter;
   private readonly fromAddress: string;
 
   constructor(private configService: ConfigService) {
@@ -13,10 +18,16 @@ export class MailService {
     const port = Number(this.configService.get<string>('SMTP_PORT') ?? 587);
     const user = this.configService.get<string>('SMTP_USER');
     const pass = this.configService.get<string>('SMTP_PASS');
-    this.fromAddress = this.configService.get<string>('SMTP_FROM') ?? `no-reply@${host ?? 'example.com'}`;
+    const allowInvalidTls =
+      this.configService.get<string>('SMTP_ALLOW_INVALID_TLS') === 'true';
+    this.fromAddress =
+      this.configService.get<string>('SMTP_FROM') ??
+      `no-reply@${host ?? 'example.com'}`;
 
     if (!host || !user || !pass) {
-      throw new InternalServerErrorException('SMTP mailer is not configured. Please set SMTP_HOST, SMTP_PORT, SMTP_USER and SMTP_PASS.');
+      throw new InternalServerErrorException(
+        'SMTP mailer is not configured. Please set SMTP_HOST, SMTP_PORT, SMTP_USER and SMTP_PASS.',
+      );
     }
 
     this.transporter = nodemailer.createTransport({
@@ -28,7 +39,7 @@ export class MailService {
         pass,
       },
       tls: {
-        rejectUnauthorized: false,
+        rejectUnauthorized: !allowInvalidTls,
       },
     });
   }
@@ -44,7 +55,9 @@ export class MailService {
       });
     } catch (error) {
       this.logger.error('Failed to send verification email', error as unknown);
-      throw new InternalServerErrorException('Unable to send verification email.');
+      throw new InternalServerErrorException(
+        'Unable to send verification email.',
+      );
     }
   }
 
